@@ -1,5 +1,5 @@
 import faust
-from schemas import CurrencySchema
+from currency_data_processing import CurrencyDataProcessing
 
 app = faust.App('currency_data_processor', broker='kafka://localhost')
 
@@ -10,6 +10,6 @@ currency_data_topic = app.topic('currency_data_topic')
 @app.agent(raw_currency_data_topic)
 async def get_raw_currencies(currency_streams: faust.Stream):
     async for key, currency in currency_streams.items():
-        currency_result = CurrencySchema.parse_obj(currency.get('Realtime Currency Exchange Rate'))
+        currency_result = await CurrencyDataProcessing().processing(currency=currency)
         await currency_data_topic.send(key=key, value=currency_result.json().encode())
         yield currency_result
