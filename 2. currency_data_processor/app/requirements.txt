@@ -1,0 +1,2 @@
+faust==1.9.0
+pydantic==1.9.0

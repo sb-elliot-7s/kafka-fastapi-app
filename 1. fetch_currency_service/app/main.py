@@ -10,10 +10,10 @@ app = faust.App('currency_app', broker='kafka://localhost')
 raw_currency_data_topic = app.topic('raw_currency_data_topic')
 
 
-@app.timer(interval=60)
+@app.timer(interval=10)
 async def fetch_currencies():
     currency_provider = CurrencyDataProvider(base_url=get_configs().api_url)
-    params = {'apikey': get_configs().api_key, 'from_currency': 'USD', 'to_currency': 'BTC'}
+    params = {'function': 'CURRENCY_EXCHANGE_RATE', 'apikey': get_configs().api_key, 'from_currency': 'USD', 'to_currency': 'JPY'}
     currency = await currency_provider.fetch_data(params=params)
 
     if currency:
