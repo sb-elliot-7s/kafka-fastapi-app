@@ -1,8 +1,12 @@
 import faust
 from repository import CurrencyRepository
 from database import currency_collection
+from configs import get_configs
 
-app = faust.App('currency_database', broker='kafka://localhost')
+app = faust.App('currency_database',
+                broker=f'kafka://{get_configs().kafka_broker}',
+                web_host=get_configs().web_host,
+                web_port=get_configs().web_port)
 
 currency_data_topic = app.topic('currency_data_topic')
 

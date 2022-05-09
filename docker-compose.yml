@@ -1,5 +1,6 @@
 version: '3'
 
+
 services:
   zookeeper:
     image: confluentinc/cp-zookeeper:7.0.1
@@ -8,21 +9,89 @@ services:
       ZOOKEEPER_CLIENT_PORT: 2181
       ZOOKEEPER_TICK_TIME: 2000
 
-  broker:
+  kafka:
     image: confluentinc/cp-kafka:7.0.1
     container_name: broker
     ports:
     # To learn about configuring Kafka for access across networks see
     # https://www.confluent.io/blog/kafka-client-cannot-connect-to-broker-on-aws-on-docker-etc/
-      - "9092:9092"
+      - 9092:9092
     depends_on:
       - zookeeper
     environment:
       KAFKA_BROKER_ID: 1
       KAFKA_ZOOKEEPER_CONNECT: 'zookeeper:2181'
       KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,PLAINTEXT_INTERNAL:PLAINTEXT
-      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://localhost:9092,PLAINTEXT_INTERNAL://broker:29092
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092,PLAINTEXT_INTERNAL://broker:29092
       KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
       KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
       KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
       TOPIC_AUTO_CREATE: false
+
+  mongo:
+    image: mongo
+    restart: always
+    ports:
+      - 27017:27017
+    environment:
+      - MONGO_INITDB_ROOT_USERNAME=root
+      - MONGO_INITDB_ROOT_PASSWORD=123456
+
+  fetch_currency_service:
+    build:
+      context: ./1. fetch_currency_service
+    restart: always
+    ports:
+      - 8002:8002
+    environment:
+      - PORT=8002
+      - HOST=0.0.0.0
+      - kafka_broker=kafka://9092
+    depends_on:
+      - kafka
+
+  currency_data_processor_service:
+    build:
+      context: ./2. currency_data_processor
+    restart: always
+    ports:
+      - 8003:8003
+    environment:
+      - PORT=8003
+      - HOST=0.0.0.0
+      - kafka_broker=kafka://9092
+    depends_on:
+      - kafka
+
+  database_service:
+    build:
+      context: ./3. database_service
+    restart: always
+    ports:
+      - 8004:8004
+    environment:
+      - PORT=8004
+      - HOST=0.0.0.0
+      - kafka_broker=kafka://9092
+      - MONGODB_HOST=mongo
+      - MONGODB_PORT=27017
+      - MONGODB_USERNAME=root
+      - MONGODB_PASSWORD=123456
+    depends_on:
+      - kafka
+
+  api_service:
+    build:
+      context: ./4. api_service
+    restart: always
+    ports:
+      - 8000:8000
+    environment:
+      - PORT=8000
+      - HOST=0.0.0.0
+      - MONGODB_HOST=mongo
+      - MONGODB_PORT=27017
+      - MONGODB_USERNAME=root
+      - MONGODB_PASSWORD=123456
+    depends_on:
+      - mongo

@@ -1,3 +1,4 @@
 aiohttp==3.8.1
 faust==1.9.0
 pydantic==1.9.0
+python-dotenv==0.20.0

@@ -1,12 +1,8 @@
-from functools import lru_cache
-
 from pydantic import BaseSettings
+from functools import lru_cache
 
 
 class Configs(BaseSettings):
-    api_url: str
-    api_key: str
-
     web_host: str
     web_port: int
 

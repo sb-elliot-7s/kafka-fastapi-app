@@ -6,6 +6,8 @@ from pydantic import BaseSettings
 class Configs(BaseSettings):
     mongodb_host: str
     mongodb_port: int
+    mongodb_username: str
+    mongodb_password: str
 
     class Config:
         env_file = '.env'

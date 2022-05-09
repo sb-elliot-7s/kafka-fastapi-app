@@ -8,7 +8,4 @@ class CurrencyDataProvider:
     async def fetch_data(self, params: dict) -> dict:
         async with aiohttp.ClientSession() as session:
             async with session.get(url=self._base_url, params=params) as response:
-                if response.status == 200:
-                    return await response.json()
-                else:
-                    return {}
+                return await response.json() if response.status == 200 else {}

@@ -4,7 +4,10 @@ import faust
 from currency_data_service import CurrencyDataProvider
 from configs import get_configs
 
-app = faust.App('currency_app', broker='kafka://localhost')
+app = faust.App('currency_app',
+                broker=f'kafka://{get_configs().kafka_broker}',
+                web_host=get_configs().web_host,
+                web_port=get_configs().web_port)
 
 raw_currency_data_topic = app.topic('raw_currency_data_topic')
 
@@ -20,4 +23,4 @@ async def fetch_currencies():
 
 @app.task
 async def start():
-    print('starting')
+    print('start')
